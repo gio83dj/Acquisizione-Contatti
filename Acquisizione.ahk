@@ -1,8 +1,10 @@
 ^ESC::ExitApp
+^F3::
+	GOSUB AGGIUNGI_CONTATTO
+	return
 ; PARTE IL PROGRAMMA CON CTRL+F2
 ^F2::
 GOSUB INPUT_RANGE_SCHEDE
-
 while quantitaSchede>=0
     {
 		GOSUB ATTIVA_GESAT
@@ -125,6 +127,18 @@ COPIA_N_SCHEDA:
 	Sleep, 100
 	RETURN
 
-
+AGGIUNGI_CONTATTO:
+	SoundBeep, 1244, 300
+	SoundBeep, 932, 500
+	InputBox, numTel, Inserisci Numero, Inserisci il numero di cellulare del cliente, 320, 240
+	InputBox, nome, Inserisci Nome, Inserisci il nome del cliente, 320, 240
+	FileAppend, BEGIN:VCARD`n`VERSION:2.1`n`N:%nome%`n`FN:%nome%`n`TEL;CELL;PREF:%numTel%`n`END:VCARD`n, C:\Users\Giorgio\Desktop\VCARD\%nome%.vcf
+	SoundBeep, 987, 500
+	MsgBox, 4, , Altri numeri?
+	IfMsgBox Yes
+		GOSUB AGGIUNGI_CONTATTO
+	else
+		return
+	return
 
 ;;;;;;;;;;;;;; Giorgio Leggio ;;;;;;;;;;;;;;;;;;;;;;;;;;;
