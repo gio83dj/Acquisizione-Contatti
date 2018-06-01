@@ -1,10 +1,17 @@
-^ESC::ExitApp
+﻿^ESC::ExitApp
 ^F3::
 	GOSUB AGGIUNGI_CONTATTO
 	return
 ; PARTE IL PROGRAMMA CON CTRL+F2
 ^F2::
-GOSUB INPUT_RANGE_SCHEDE
+
+; Chiede se vogliamo usare l'automazione dal file ultima.txt o inserire manualmente range schede
+MsgBox , 4, AUTOMAZIONE, VUOI USARE AUTOMAZIONE?,
+IfMsgBox Yes
+    GOSUB AUTOMAZIONE
+else
+    GOSUB INPUT_RANGE_SCHEDE
+
 while quantitaSchede>=0
     {
 		GOSUB ATTIVA_GESAT
@@ -46,6 +53,7 @@ while quantitaSchede>=0
 			Send, {Esc}
 		}
 	}
+	GOSUB AGGIORNA_FILE_ULTIMA
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; SUBROUTINES ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -59,10 +67,45 @@ ATTIVA_GESAT:
 
 ;Crea file di testo con il numero di scheda nome storico trovata
 ANNOTA_STORICO:
-	FileAppend, %schedaIniziale%`n , C:\Users\Giorgio\Desktop\VCARD\storico.txt
+	FileAppend, %schedaIniziale%`n , C:\Users\Giorgio\Desktop\VCARD\STORICO\storico.txt
 	SoundBeep, 987, 150
 	return
 
+AUTOMAZIONE:
+	GOSUB LEGGI_ULTIMA_FATTA
+	GOSUB LEGGI_ULTIMA_DA_FARE
+	RETURN
+	
+; Legge ultima scheda messa in VCF
+LEGGI_ULTIMA_FATTA:
+	FileReadLine, schedaIniziale, C:\Users\Giorgio\Desktop\VCARD\STORICO\ultima.txt, 1 
+	schedaIniziale := schedaIniziale + 1
+	MsgBox, , ,INIZIA DA %schedaIniziale% COMPRESO
+	if ErrorLevel
+        	RETURN
+	;schedaIniziale = %Clipboard%
+	;Filedelete, C:\Users\Giorgio\Desktop\VCARD\STORICO\ultima.txt
+	;SoundBeep, 987, 150
+	return
+
+; Legge valore da gesat e lo salva come scheda da terminare
+LEGGI_ULTIMA_DA_FARE:
+	GOSUB COPIA_N_SCHEDA
+	schedaFinale = %Clipboard%
+	schedaFinale := schedaFinale - 1
+	;FileAppend, %schedaFinale%`n , C:\Users\Giorgio\Desktop\VCARD\STORICO\ultima.txt
+	;SoundBeep, 987, 150
+	quantitaSchede := schedaFinale - schedaIniziale
+	schedeFatte = %schedaIniziale%-%schedaFinale%
+	MsgBox, , ,FAREMO %schedeFatte%
+	return
+	
+AGGIORNA_FILE_ULTIMA:
+	Filedelete, C:\Users\Giorgio\Desktop\VCARD\STORICO\ultima.txt
+	FileAppend, %schedaFinale%`n , C:\Users\Giorgio\Desktop\VCARD\STORICO\ultima.txt
+	MsgBox, , ,AGGIORNATO FILE ULTIMA
+	return
+	
 ;Crea file VCARD con i contatti selezionati
 CREA_VCARD:
 	FileAppend, BEGIN:VCARD`n`VERSION:2.1`n`N:%nome%`n`FN:%nome%`n`TEL;CELL;PREF:%numTel%`n`END:VCARD`n, C:\Users\Giorgio\Desktop\VCARD\%schedeFatte%.vcf
